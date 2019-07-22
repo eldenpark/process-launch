@@ -1,0 +1,24 @@
+{
+  "author": "Elden S. Park",
+  "dependencies": {
+    "chalk": "^2.4.2",
+    "jege": "^0.4.0"
+  },
+  "description": "",
+  "main": "lib/index.js",
+  "name": "process-launch",
+  "keywords": [],
+  "license": "ISC",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eldeni/process-launch.git",
+    "directory": "packages/process-launch"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "0.0.0"
+}
