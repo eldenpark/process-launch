@@ -8,22 +8,41 @@ const processMissingError = new Error(
   'process with the name does not exist',
 );
 
-const processAndProcessGroupNotProvidedError = new Error(
-  'Either process or processGroup should be provided',
+const processGroupMissingError = new Error(
+  'processGroup with the name does not exist',
+);
+
+const processGroupHavingInvalidProcessDefinitionError = new Error(
+  'Some processGroup does have invalid process names',
 );
 
 export function createLaunch<
   PD extends ProcessDefinitions,
   PGD extends ProcessGroupDefinitions,
->(
-  processDefinitions: PD,
-  processGroupDefinitions: PGD,
-): Launcher<PD, PGD> {
+>({
+  processDefinitions,
+  processGroupDefinitions,
+}: CreateLaunchArgs<PD, PGD>): Launcher<PD, PGD> {
   log(
     'createLauncher(): processDefinitions: %j, processGroupDefinitions: %j',
     processDefinitions,
     processGroupDefinitions,
   );
+
+  if (processGroupDefinitions) {
+    Object.values(processGroupDefinitions)
+      .forEach((processes) => {
+        processes.forEach((process) => {
+          if (processDefinitions[process] === undefined) {
+            throw processGroupHavingInvalidProcessDefinitionError;
+          }
+        });
+      });
+  }
+
+  const _processGroupDefinitions = processGroupDefinitions || {
+    default: Object.keys(processDefinitions),
+  };
 
   function launch({
     process,
@@ -46,18 +65,17 @@ export function createLaunch<
         }
         childProcess.spawn.call(this, ...processDefinition);
       } else if (processGroup) {
-        const processes = processGroupDefinitions[processGroup] || processGroupDefinitions.default;
+        const processes = _processGroupDefinitions[processGroup];
         log(`launcher(): starting only this processGroup: ${chalk.yellow('%s')}`, processGroup);
 
-        Object.entries(processDefinitions)
-          .forEach(([processName, processDefinition]) => {
-            if (processes.includes(processName)) {
-              log('launcher(): starting processName: %s', processName);
-              childProcess.spawn.call(this, ...processDefinition);
-            }
-          });
+        if (processes === undefined) {
+          throw processGroupMissingError;
+        }
+
+        spawnAll(processDefinitions, processes);
       } else {
-        throw processAndProcessGroupNotProvidedError;
+        const processes = _processGroupDefinitions.default;
+        spawnAll(processDefinitions, processes);
       }
     } catch (err) {
       log('launcher(): error reading file', err);
@@ -67,6 +85,15 @@ export function createLaunch<
   return launch;
 }
 
+function spawnAll(processDefinitions: ProcessDefinitions, processes) {
+  Object.entries(processDefinitions)
+    .forEach(([processName, processDefinition]) => {
+      if (processes.includes(processName)) {
+        log('launcher(): starting processName: %s', processName);
+        childProcess.spawn.call(this, ...processDefinition);
+      }
+    });
+}
 
 interface ProcessDefinitions {
   // This is ugly, but as of now (TypeSript 3.5.2), tuple is not inferred in the best way.
@@ -83,4 +110,9 @@ interface Launcher<PD, PGD> {
     process?: keyof PD;
     processGroup?: keyof PGD;
   })
+}
+
+interface CreateLaunchArgs<PD, PGD> {
+  processDefinitions: PD,
+  processGroupDefinitions?: PGD;
 }

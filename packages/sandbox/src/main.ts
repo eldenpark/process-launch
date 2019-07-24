@@ -30,7 +30,10 @@ const processGroupDefinitions = {
   default: ['processOne'],
 };
 
-const launch = createLaunch(processDefinitions, processGroupDefinitions);
+const launch = createLaunch({
+  processDefinitions,
+  processGroupDefinitions,
+});
 
 function main() {
   log('main(): launched');
