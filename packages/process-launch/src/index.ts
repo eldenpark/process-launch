@@ -22,7 +22,7 @@ export function createLaunch<
 >({
   processDefinitions,
   processGroupDefinitions,
-}: CreateLaunchArgs<PD, PGD>): Launcher<PD, PGD> {
+}: CreateLaunchArgs<PD, PGD>) {
   log(
     'createLauncher(): processDefinitions: %j, processGroupDefinitions: %j',
     processDefinitions,
@@ -47,7 +47,7 @@ export function createLaunch<
   function launch({
     process,
     processGroup,
-  }) {
+  }: LaunchArgs<PD, PGD> = {}) {
     try {
       log(
         'launcher(): process: %s, processGroup: %s',
@@ -65,7 +65,7 @@ export function createLaunch<
         }
         childProcess.spawn.call(this, ...processDefinition);
       } else if (processGroup) {
-        const processes = _processGroupDefinitions[processGroup];
+        const processes = _processGroupDefinitions[processGroup as any];
         log(`launcher(): starting only this processGroup: ${chalk.yellow('%s')}`, processGroup);
 
         if (processes === undefined) {
@@ -105,11 +105,9 @@ interface ProcessGroupDefinitions {
   [processGroupName: string]: string[];
 }
 
-interface Launcher<PD, PGD> {
-  (args: {
-    process?: keyof PD;
-    processGroup?: keyof PGD;
-  })
+interface LaunchArgs<PD, PGD> {
+  process?: keyof PD;
+  processGroup?: keyof PGD;
 }
 
 interface CreateLaunchArgs<PD, PGD> {
