@@ -74,6 +74,9 @@ export function createLaunch<
 
         spawnAll(processDefinitions, processes);
       } else {
+        log(
+          `launcher(): neither process or processGroup specified. Starting processGroup: ${chalk.yellow('default')}`,
+        );
         const processes = _processGroupDefinitions.default;
         spawnAll(processDefinitions, processes);
       }

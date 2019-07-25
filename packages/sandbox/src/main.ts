@@ -39,7 +39,7 @@ function main() {
   log('main(): launched');
 
   launch({
-    process: 'processTwo',
+    // process: 'processTwo',
     // processGroup: 'default',
   });
 }
