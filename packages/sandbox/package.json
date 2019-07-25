@@ -2,12 +2,12 @@
   "author": "Elden S. Park",
   "dependencies": {
     "jege": "^0.4.0",
-    "process-launch": "^0.3.0"
+    "process-launch": "^0.3.1"
   },
   "description": "",
   "keywords": [],
   "license": "ISC",
   "name": "sandbox",
   "private": true,
-  "version": "0.3.0"
+  "version": "0.3.1"
 }
