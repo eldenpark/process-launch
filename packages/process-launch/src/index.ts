@@ -95,7 +95,7 @@ function spawnAll(processDefinitions: ProcessDefinitions, processes: string[]) {
   Object.entries(processDefinitions)
     .forEach(([processName, processDefinition]) => {
       if (processes.includes(processName)) {
-        log('launcher(): starting processName: %s', processName);
+        log('spawnAll(): starting processName: %s', processName);
 
         const { args, command, options } = processDefinition;
         const envInterpolatedOptions = options
@@ -107,7 +107,17 @@ function spawnAll(processDefinitions: ProcessDefinitions, processes: string[]) {
             },
           }
           : undefined;
-        childProcess.spawn(command, args, envInterpolatedOptions);
+
+        childProcess.spawn(command, args, envInterpolatedOptions)
+          .on('exit', (code) => {
+            if (code !== 0) {
+              log(
+                `spawnAll(): ${chalk.red('error')} launching process: %s, code: %s`,
+                processName,
+                code,
+              );
+            }
+          });
       }
     });
 }
