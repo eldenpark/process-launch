@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import childProcess from 'child_process';
+import childProcess, { SpawnOptionsWithoutStdio } from 'child_process';
 import { logger } from 'jege/server';
 
 const log = logger('[process-launch]');
@@ -29,16 +29,10 @@ export function createLaunch<
     processGroupDefinitions,
   );
 
-  if (processGroupDefinitions) {
-    Object.values(processGroupDefinitions)
-      .forEach((processes) => {
-        processes.forEach((process) => {
-          if (processDefinitions[process] === undefined) {
-            throw processGroupHavingInvalidProcessDefinitionError;
-          }
-        });
-      });
-  }
+  checkIfProcessGroupHasValidProcessNames(
+    processGroupDefinitions as ProcessGroupDefinitions,
+    processDefinitions,
+  );
 
   const _processGroupDefinitions = processGroupDefinitions || {
     default: Object.keys(processDefinitions),
@@ -63,7 +57,8 @@ export function createLaunch<
           log('launcher(): process does not exist: %s', process);
           throw processMissingError;
         }
-        childProcess.spawn.call(this, ...processDefinition);
+
+        spawnAll(processDefinitions, [process as string]);
       } else if (processGroup) {
         const processes = _processGroupDefinitions[processGroup as any];
         log(`launcher(): starting only this processGroup: ${chalk.yellow('%s')}`, processGroup);
@@ -88,19 +83,57 @@ export function createLaunch<
   return launch;
 }
 
-function spawnAll(processDefinitions: ProcessDefinitions, processes) {
+export function proc(command: string, args: string[], options?: SpawnOptionsWithoutStdio) {
+  return {
+    args,
+    command,
+    options,
+  };
+}
+
+function spawnAll(processDefinitions: ProcessDefinitions, processes: string[]) {
   Object.entries(processDefinitions)
     .forEach(([processName, processDefinition]) => {
       if (processes.includes(processName)) {
         log('launcher(): starting processName: %s', processName);
-        childProcess.spawn.call(this, ...processDefinition);
+
+        const { args, command, options } = processDefinition;
+        const envInterpolatedOptions = options
+          ? {
+            ...options,
+            env: {
+              ...process.env,
+              ...options.env,
+            },
+          }
+          : undefined;
+        childProcess.spawn(command, args, envInterpolatedOptions);
       }
     });
 }
 
+function checkIfProcessGroupHasValidProcessNames(
+  processGroupDefinitions: ProcessGroupDefinitions,
+  processDefinitions: ProcessDefinitions,
+) {
+  if (processGroupDefinitions) {
+    Object.values(processGroupDefinitions)
+      .forEach((processes) => {
+        processes.forEach((process) => {
+          if (processDefinitions[process] === undefined) {
+            throw processGroupHavingInvalidProcessDefinitionError;
+          }
+        });
+      });
+  }
+}
+
 interface ProcessDefinitions {
-  // This is ugly, but as of now (TypeSript 3.5.2), tuple is not inferred in the best way.
-  [processName: string]: [string, string[], object] | (string | string[] | object)[];
+  [processName: string]: {
+    args: string[];
+    command: string;
+    options?: SpawnOptionsWithoutStdio;
+  };
 }
 
 interface ProcessGroupDefinitions {

@@ -1,20 +1,23 @@
-import { createLaunch } from 'process-launch';
+import { createLaunch, proc } from 'process-launch';
 import { logger } from 'jege/server';
 
 const log = logger('[sandbox]');
 
 const processDefinitions = {
-  processOne: [
+  processOne: proc(
     'node',
     [
       './src/processes/process1.js',
     ],
     {
       cwd: '.',
+      env: {
+        POWER: '1',
+      },
       stdio: 'inherit',
     },
-  ],
-  processTwo: [
+  ),
+  processTwo: proc(
     'node',
     [
       './src/processes/process2.js',
@@ -23,7 +26,7 @@ const processDefinitions = {
       cwd: '.',
       stdio: 'inherit',
     },
-  ],
+  ),
 };
 
 const processGroupDefinitions = {
@@ -38,9 +41,12 @@ const launch = createLaunch({
 function main() {
   log('main(): launched');
 
+  launch();
+
+  log('main(): initial launch finished [timecheck]');
+
   launch({
-    // process: 'processTwo',
-    // processGroup: 'default',
+    process: 'processTwo',
   });
 }
 
