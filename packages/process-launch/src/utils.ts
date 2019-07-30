@@ -7,3 +7,16 @@ export function proc(command: string, args: string[], options?: SpawnOptions) {
     options,
   };
 }
+
+export function interpolateOptions(options?: SpawnOptions) {
+  const envInterpolatedOptions = options
+    ? {
+      ...options,
+      env: {
+        ...process.env,
+        ...options.env,
+      },
+    }
+    : undefined;
+  return envInterpolatedOptions;
+}

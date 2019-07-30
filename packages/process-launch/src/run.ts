@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import childProcess from 'child_process';
 import { logger } from 'jege/server';
 
+import { interpolateOptions } from './utils';
 import {
   ProcessDefinitions,
   ProcessGroupDefinitions,
@@ -71,15 +72,7 @@ function spawnAll(processDefinitions: ProcessDefinitions, processes: string[]) {
         log('spawnAll(): starting processName: %s', processName);
 
         const { args, command, options } = processDefinition;
-        const envInterpolatedOptions = options
-          ? {
-            ...options,
-            env: {
-              ...process.env,
-              ...options.env,
-            },
-          }
-          : undefined;
+        const envInterpolatedOptions = interpolateOptions(options);
 
         childProcess.spawn(command, args, envInterpolatedOptions as any)
           .on('exit', (code) => {
@@ -95,12 +88,15 @@ function spawnAll(processDefinitions: ProcessDefinitions, processes: string[]) {
     });
 }
 
-export interface RunArgs<PD, PGD> {
+export interface RunArgs<PD extends ProcessDefinitions, PGD extends ProcessGroupDefinitions> {
   process?: (keyof PD) | undefined;
   processGroup?: (keyof PGD) | undefined;
 }
 
-export type RunTotalArgs<PD, PGD> = RunArgs<PD, PGD> & {
+export type RunTotalArgs<
+  PD extends ProcessDefinitions,
+  PGD extends ProcessGroupDefinitions,
+> = RunArgs<PD, PGD> & {
   processDefinitions: PD;
   processGroupDefinitions: PGD;
-}
+};

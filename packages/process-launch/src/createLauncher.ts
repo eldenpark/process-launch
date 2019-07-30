@@ -1,6 +1,7 @@
 import { logger } from 'jege/server';
 
 import _run, { RunArgs } from './run';
+import _runInSequence, { RunInSequenceArgs } from './runInSequence';
 import {
   ProcessDefinitions,
   ProcessGroupDefinitions,
@@ -45,6 +46,12 @@ export default function createLauncher<
       processGroup,
       processGroupDefinitions: processGroupDefinitionsWithDefault,
     }),
+    runInSequence: ({
+      order,
+    }) => _runInSequence({
+      order,
+      processDefinitions,
+    }),
   };
 }
 
@@ -86,6 +93,7 @@ interface LauncherOptions<PD, PGD> {
   processGroupDefinitions?: PGD;
 }
 
-interface Launcher<PD, PGD> {
-  run: (arg: RunArgs<PD, PGD>) => void;
+interface Launcher<PD extends ProcessDefinitions, PGD extends ProcessGroupDefinitions> {
+  run: (args: RunArgs<PD, PGD>) => void;
+  runInSequence: (args: RunInSequenceArgs<PD>) => void;
 }

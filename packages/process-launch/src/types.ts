@@ -1,11 +1,13 @@
 import { SpawnOptions } from 'child_process';
 
 export interface ProcessDefinitions {
-  [processName: string]: {
-    args: string[];
-    command: string;
-    options?: SpawnOptions;
-  };
+  [processName: string]: ProcessDefinition;
+}
+
+export interface ProcessDefinition {
+  args: string[];
+  command: string;
+  options?: SpawnOptions;
 }
 
 export interface ProcessGroupDefinitions {

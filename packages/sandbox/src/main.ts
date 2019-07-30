@@ -4,7 +4,27 @@ import { logger } from 'jege/server';
 const log = logger('[sandbox]');
 
 const processDefinitions = {
-  processOne: proc(
+  build1: proc(
+    'node',
+    [
+      './src/processes/build1.js',
+    ],
+    {
+      cwd: '.',
+      stdio: 'inherit',
+    },
+  ),
+  build2: proc(
+    'node',
+    [
+      './src/processes/build2.js',
+    ],
+    {
+      cwd: '.',
+      stdio: 'inherit',
+    },
+  ),
+  process1: proc(
     'node',
     [
       './src/processes/process1.js',
@@ -17,7 +37,7 @@ const processDefinitions = {
       stdio: 'inherit',
     },
   ),
-  processTwo: proc(
+  process2: proc(
     'node',
     [
       './src/processes/process2.js',
@@ -30,7 +50,7 @@ const processDefinitions = {
 };
 
 const processGroupDefinitions = {
-  default: ['processOne'],
+  default: ['process1'],
 };
 
 const Launcher = createLauncher({
@@ -46,7 +66,13 @@ function main() {
   log('main(): initial launch finished [timecheck]');
 
   Launcher.run({
-    process: 'processTwo',
+    process: 'process2',
+  });
+
+  log('main(): second launch finished [timecheck]');
+
+  Launcher.runInSequence({
+    order: ['build1', 'build2'],
   });
 }
 
