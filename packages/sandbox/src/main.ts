@@ -1,4 +1,4 @@
-import { createLaunch, proc } from 'process-launch';
+import { createLauncher, proc } from 'process-launch';
 import { logger } from 'jege/server';
 
 const log = logger('[sandbox]');
@@ -33,7 +33,7 @@ const processGroupDefinitions = {
   default: ['processOne'],
 };
 
-const launch = createLaunch({
+const Launcher = createLauncher({
   processDefinitions,
   processGroupDefinitions,
 });
@@ -41,11 +41,11 @@ const launch = createLaunch({
 function main() {
   log('main(): launched');
 
-  launch();
+  Launcher.run();
 
   log('main(): initial launch finished [timecheck]');
 
-  launch({
+  Launcher.run({
     process: 'processTwo',
   });
 }

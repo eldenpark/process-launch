@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import childProcess, { SpawnOptionsWithoutStdio } from 'child_process';
+import childProcess, { SpawnOptions } from 'child_process';
 import { logger } from 'jege/server';
 
 const log = logger('[process-launch]');
@@ -16,7 +16,7 @@ const processGroupHavingInvalidProcessDefinitionError = new Error(
   'Some processGroup does have invalid process names',
 );
 
-export function createLaunch<
+export function createLauncher<
   PD extends ProcessDefinitions,
   PGD extends ProcessGroupDefinitions,
 >({
@@ -38,7 +38,7 @@ export function createLaunch<
     default: Object.keys(processDefinitions),
   };
 
-  function launch({
+  function run({
     process,
     processGroup,
   }: LaunchArgs<PD, PGD> = {}) {
@@ -80,10 +80,12 @@ export function createLaunch<
     }
   }
 
-  return launch;
+  return {
+    run,
+  };
 }
 
-export function proc(command: string, args: string[], options?: SpawnOptionsWithoutStdio) {
+export function proc(command: string, args: string[], options?: SpawnOptions) {
   return {
     args,
     command,
@@ -108,7 +110,7 @@ function spawnAll(processDefinitions: ProcessDefinitions, processes: string[]) {
           }
           : undefined;
 
-        childProcess.spawn(command, args, envInterpolatedOptions)
+        childProcess.spawn(command, args, envInterpolatedOptions as any)
           .on('exit', (code) => {
             if (code !== 0) {
               log(
@@ -142,7 +144,7 @@ interface ProcessDefinitions {
   [processName: string]: {
     args: string[];
     command: string;
-    options?: SpawnOptionsWithoutStdio;
+    options?: SpawnOptions;
   };
 }
 
