@@ -98,12 +98,12 @@ function spawnAll(processDefinitions: ProcessDefinitions, processes: string[]) {
     });
 }
 
-export interface CreateRunArgs<PD, PGD> {
-  processDefinitions: PD,
-  processGroupDefinitions: PGD;
-}
-
-interface RunArgs<PD, PGD> {
+export interface RunArgs<PD, PGD> {
   process?: keyof PD;
   processGroup?: keyof PGD;
+}
+
+interface CreateRunArgs<PD, PGD> {
+  processDefinitions: PD,
+  processGroupDefinitions: PGD;
 }

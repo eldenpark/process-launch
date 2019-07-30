@@ -1,7 +1,7 @@
 import { SpawnOptions } from 'child_process';
 import { logger } from 'jege/server';
 
-import { createRun } from './run';
+import { createRun, RunArgs } from './run';
 import {
   ProcessDefinitions,
   ProcessGroupDefinitions,
@@ -19,7 +19,7 @@ export function createLauncher<
 >({
   processDefinitions,
   processGroupDefinitions,
-}: LauncherOptions<PD, PGD>): Launcher {
+}: LauncherOptions<PD, PGD>): Launcher<PD, PGD> {
   log(
     'createLauncher(): processDefinitions: %j, processGroupDefinitions: %j',
     processDefinitions,
@@ -31,11 +31,12 @@ export function createLauncher<
     processDefinitions,
   );
 
-  const processGroupDefinitionsWithDefault = processGroupDefinitions || {
-    default: Object.keys(processDefinitions),
-  };
+  const processGroupDefinitionsWithDefault: PGD = addDefaultIfNotExist(
+    processDefinitions,
+    processGroupDefinitions,
+  );
 
-  const run = createRun({
+  const run = createRun<PD, PGD>({
     processDefinitions,
     processGroupDefinitions: processGroupDefinitionsWithDefault,
   });
@@ -69,11 +70,23 @@ function checkIfProcessGroupHasValidProcessNames(
   }
 }
 
+function addDefaultIfNotExist(processDefinitions, processGroupDefinitions) {
+  if (processGroupDefinitions && !processGroupDefinitions.default) {
+    return {
+      ...processGroupDefinitions,
+      default: Object.keys(processDefinitions),
+    };
+  }
+  return {
+    default: Object.keys(processDefinitions),
+  };
+}
+
 interface LauncherOptions<PD, PGD> {
   processDefinitions: PD,
   processGroupDefinitions?: PGD;
 }
 
-interface Launcher {
-  run: any;
+interface Launcher<PD, PGD> {
+  run: (arg: RunArgs<PD, PGD>) => void;
 }
