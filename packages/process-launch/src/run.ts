@@ -17,54 +17,51 @@ const processGroupMissingError = new Error(
   'processGroup with the name does not exist',
 );
 
-export function createRun<
+export default function run<
   PD extends ProcessDefinitions,
   PGD extends ProcessGroupDefinitions,
 >({
+  process,
   processDefinitions,
+  processGroup,
   processGroupDefinitions,
-}: CreateRunArgs<PD, PGD>) {
-  return function run({
-    process,
-    processGroup,
-  }: RunArgs<PD, PGD> = {}) {
-    try {
-      log(
-        'launcher(): process: %s, processGroup: %s',
-        process,
-        processGroup,
-      );
+}: RunTotalArgs<PD, PGD>) {
+  try {
+    log(
+      'launcher(): process: %s, processGroup: %s',
+      process,
+      processGroup,
+    );
 
-      if (process) {
-        log(`launcher(): starting only this process: ${chalk.yellow('%s')}`, process);
+    if (process) {
+      log(`launcher(): starting only this process: ${chalk.yellow('%s')}`, process);
 
-        const processDefinition = processDefinitions[process];
-        if (!processDefinition) {
-          log('launcher(): process does not exist: %s', process);
-          throw processMissingError;
-        }
-
-        spawnAll(processDefinitions, [process as string]);
-      } else if (processGroup) {
-        const processes = processGroupDefinitions[processGroup as any];
-        log(`launcher(): starting only this processGroup: ${chalk.yellow('%s')}`, processGroup);
-
-        if (processes === undefined) {
-          throw processGroupMissingError;
-        }
-
-        spawnAll(processDefinitions, processes);
-      } else {
-        log(
-          `launcher(): neither process or processGroup specified. Starting processGroup: ${chalk.yellow('default')}`,
-        );
-        const processes = processGroupDefinitions.default;
-        spawnAll(processDefinitions, processes);
+      const processDefinition = processDefinitions[process];
+      if (!processDefinition) {
+        log('launcher(): process does not exist: %s', process);
+        throw processMissingError;
       }
-    } catch (err) {
-      log('launcher(): error reading file', err);
+
+      spawnAll(processDefinitions, [process as string]);
+    } else if (processGroup) {
+      const processes = processGroupDefinitions[processGroup as any];
+      log(`launcher(): starting only this processGroup: ${chalk.yellow('%s')}`, processGroup);
+
+      if (processes === undefined) {
+        throw processGroupMissingError;
+      }
+
+      spawnAll(processDefinitions, processes);
+    } else {
+      log(
+        `launcher(): neither process or processGroup specified. Starting processGroup: ${chalk.yellow('default')}`,
+      );
+      const processes = processGroupDefinitions.default;
+      spawnAll(processDefinitions, processes);
     }
-  };
+  } catch (err) {
+    log('launcher(): error reading file', err);
+  }
 }
 
 function spawnAll(processDefinitions: ProcessDefinitions, processes: string[]) {
@@ -99,11 +96,11 @@ function spawnAll(processDefinitions: ProcessDefinitions, processes: string[]) {
 }
 
 export interface RunArgs<PD, PGD> {
-  process?: keyof PD;
-  processGroup?: keyof PGD;
+  process?: (keyof PD) | undefined;
+  processGroup?: (keyof PGD) | undefined;
 }
 
-interface CreateRunArgs<PD, PGD> {
-  processDefinitions: PD,
+export type RunTotalArgs<PD, PGD> = RunArgs<PD, PGD> & {
+  processDefinitions: PD;
   processGroupDefinitions: PGD;
 }
