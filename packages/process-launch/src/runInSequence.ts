@@ -63,7 +63,11 @@ async function batchExecuteSpawn(processDefinitionList: processDescription[]) {
   }
 
   for (let i = 0; i < processDefinitionList.length; i += 1) {
-    await execute(processDefinitionList[i]);
+    try {
+      await execute(processDefinitionList[i]);
+    } catch (err) {
+      console.log(2222222);
+    }
   }
 }
 

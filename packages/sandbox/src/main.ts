@@ -24,6 +24,26 @@ const processDefinitions = {
       stdio: 'inherit',
     },
   ),
+  build3: proc(
+    'node',
+    [
+      './src/processes/build3.js',
+    ],
+    {
+      cwd: '.',
+      stdio: 'inherit',
+    },
+  ),
+  build4: proc(
+    'node',
+    [
+      './src/processes/build1.js',
+    ],
+    {
+      cwd: '.',
+      stdio: 'inherit',
+    },
+  ),
   process1: proc(
     'node',
     [
@@ -73,6 +93,10 @@ function main() {
 
   Launcher.runInSequence({
     order: ['build1', 'build2'],
+  });
+
+  Launcher.runInSequence({
+    order: ['build3', 'build4'],
   });
 }
 
